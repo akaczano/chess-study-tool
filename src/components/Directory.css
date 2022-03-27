@@ -1,0 +1,19 @@
+.save-check {
+    color: green;
+}
+.save-check:hover {    
+    color: lightgreen;    
+}
+
+.close-icon {
+    color: red;
+    margin-left: 8px;
+}
+
+.close-icon:hover {
+    color: pink;
+}
+
+.select-icon:hover {    
+    color: gray;
+}
