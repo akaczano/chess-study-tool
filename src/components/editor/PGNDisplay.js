@@ -1,8 +1,10 @@
 import React from 'react';
 import { Button, ButtonGroup, Form, Row } from 'react-bootstrap';
 import { GiEmptyChessboard } from 'react-icons/gi';
-import { FaChessBishop } from 'react-icons/fa';
-import { AiOutlineArrowUp, AiFillDelete, AiFillEdit } from 'react-icons/ai';
+import { FaChessBishop, FaWpforms } from 'react-icons/fa';
+import { AiOutlineArrowUp, AiFillDelete, AiFillEdit, AiFillSave } from 'react-icons/ai';
+import { RiArrowGoBackLine } from 'react-icons/ri';
+import { BsFillCpuFill } from 'react-icons/bs'
 import { connect } from 'react-redux';
 
 import {
@@ -13,6 +15,7 @@ import {
     setPositionModal,
     setNAGs
 } from '../../actions/editorActions';
+import { openModal } from '../../actions/engineActions';
 
 import { nags, getSymbol } from '../../chess/nag';
 
@@ -94,7 +97,7 @@ class PGNDisplay extends React.Component {
 
     render() {
         return (
-            <div style={{ height: '73vh', border: '3px solid #535657', borderRadius: '6px' }}>
+            <div style={{ marginTop: '3vh', height: '70vh', border: '3px solid #535657', borderRadius: '6px', width: '100%'}}>
 
                 {this.getContent()}
 
@@ -137,8 +140,15 @@ class PGNDisplay extends React.Component {
                                 <GiEmptyChessboard />
                                 <AiFillEdit />
                             </Button>
-                            <Button variant="secondary" onClick={() => this.props.setModal(true)}>Edit game data</Button>
-                        </ButtonGroup>
+                            <Button variant="secondary" onClick={() => this.props.openModal() }><BsFillCpuFill /></Button>
+                            <Button variant="secondary" onClick={() => this.props.setModal(true)}> <FaWpforms /> </Button>
+                            <Button variant="primary" onClick={() => this.props.onSave()} disabled={!this.props.dirty}>
+                                <AiFillSave />
+                            </Button>
+                            <Button variant="primary" onClick={() => this.props.onClose()}>
+                                <RiArrowGoBackLine />
+                            </Button>
+                        </ButtonGroup>                                                  
                     </div>
                 </div>
             </div>
@@ -147,11 +157,13 @@ class PGNDisplay extends React.Component {
 }
 
 const mapStateToProps = state => {
+    console.log(state.editor.dirty);
     return {
-        game: state.editor.game
+        game: state.editor.game,
+        dirty: state.editor.dirty
     };
 };
 
 export default connect(mapStateToProps, {
-    setModal, deleteMove, promoteMove, setAnnotation, setPositionModal, setNAGs
+    setModal, deleteMove, promoteMove, setAnnotation, setPositionModal, setNAGs, openModal
 })(PGNDisplay);

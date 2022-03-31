@@ -1,5 +1,6 @@
 import React from 'react';
 import { Modal } from 'react-bootstrap';
+
 import './Editor.css';
 import { graphicFromPiece, promotionPieces } from '../../chess/chess';
 import Square from './Square';
@@ -104,6 +105,7 @@ class ChessBoard extends React.Component {
     }
 
     render() {
+        this.props.onRender();
         const squares = this.props.reversed ? this.props.position.squares.slice().reverse() :
             this.props.position.squares;
         return (
@@ -146,5 +148,6 @@ class ChessBoard extends React.Component {
     }
 
 }
+
 
 export default ChessBoard;

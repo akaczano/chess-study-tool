@@ -2,13 +2,13 @@ import React from 'react';
 import { Container, Row, Col, Modal, Spinner, Button, Alert } from 'react-bootstrap';
 import { connect } from 'react-redux';
 
-
 import NavButtons from './NavButtons';
 import ChessBoard from './ChessBoard';
-import PGN from '../../chess/PGN';
 import PGNDisplay from './PGNDisplay';
 import DataModal from './DataModal';
 import PositionModal from './PositionModal';
+import EngineDialog from './EngineDialog';
+import EngineDisplay from './EngineDisplay';
 import {
     loadGame,
     goForward,
@@ -20,6 +20,7 @@ import {
     saveGame,
     clearError
 } from '../../actions/editorActions';
+import { resetEngine, restartIfNeeded } from '../../actions/engineActions';
 
 class PGNEditor extends React.Component {
     constructor(props) {
@@ -36,7 +37,8 @@ class PGNEditor extends React.Component {
                 this.props.goForward();
             }
         });*/
-        this.props.loadGame(this.props.match.params.id);        
+        this.props.loadGame(this.props.match.params.id); 
+        this.props.resetEngine();       
     }
 
     getParent() {
@@ -82,6 +84,15 @@ class PGNEditor extends React.Component {
         document.getElementById('move' + this.props.game.current.prev?.key)?.scrollIntoViewIfNeeded();
     }
 
+    onSave = () => {
+        this.props.saveGame(this.getParent());
+    }
+
+    onClose = () => {
+        let p = this.getParent();
+        this.props.history.push('/database/' + (p ? p : ''));
+    }
+
     render() {
         if (!this.props.loaded) {
             return (
@@ -104,10 +115,11 @@ class PGNEditor extends React.Component {
 
                 <DataModal />
                 <PositionModal />
-                
+                <EngineDialog />
+
                 <Row style={{ height: '100%', width: '100%', margin: 0 }}>
 
-                    <Col md={8}>
+                    <Col md={7}>
                         <div style={{ width: '100%', textAlign: 'center' }}>
                             <strong style={{fontSize: '19px'}}>
                                 {this.props.white_name + ' '}
@@ -125,6 +137,7 @@ class PGNEditor extends React.Component {
                             onMove={this.props.doMove}
                             style={{ width: '73vh', height: '73vh', margin: 'auto' }}
                             reversed={this.state.reversed}
+                            onRender={() => this.props.restartIfNeeded() }
                         />
                         <div style={{ width: '73vh', margin: 'auto' }}>
                             <NavButtons
@@ -139,30 +152,15 @@ class PGNEditor extends React.Component {
                         </div>
 
                     </Col>
-                    <Col md={4} style={{ paddingTop: '2%' }}>
-                        {this.getAlert()}
-                        <PGNDisplay game={this.props.game} onUpdate={() => this.setState({ game: this.props.game })} />
-                        <div style={{ padding: '10px' }}>
-                            <div style={{ margin: 'auto', width: 'fit-content' }}>
-                                <Button
-                                    variant="primary"
-                                    style={{ marginRight: '5px' }}
-                                    onClick={ () => this.props.saveGame(this.getParent()) }
-                                    disabled={!this.props.dirty}
-                                >
-                                    {this.props.saving ? <Spinner animation="border" /> : "Save"}
-                                </Button>
-                                <Button
-                                    variant="primary"
-                                    onClick={() => {
-                                        let p = this.getParent();
-                                        this.props.history.push('/database/' + (p ? p : ''));
-                                    }}
-                                >
-                                    Close
-                                </Button>
-                            </div>
-                        </div>
+                    <Col md={5} >
+                        {this.getAlert()}                        
+                        <PGNDisplay
+                            game={this.props.game}
+                            onUpdate={() => this.setState({ game: this.props.game })} 
+                            onSave={this.onSave}
+                            onClose={this.onClose}
+                        />    
+                        {this.props.engineKey ? <EngineDisplay /> : null}                    
                     </Col>
                 </Row>
             </Container>
@@ -186,7 +184,8 @@ const mapStateToProps = state => {
         round: state.editor.gameData.round,
         dirty: state.editor.dirty,
         saving: state.editor.saving,
-        error: state.editor.error
+        error: state.editor.error,
+        engineKey: state.engine.key
     };
 }
 
@@ -199,5 +198,7 @@ export default connect(mapStateToProps, {
     doMove,
     setModal,
     saveGame,
-    clearError
+    clearError,
+    resetEngine,
+    restartIfNeeded
 })(PGNEditor);

@@ -9,6 +9,7 @@ import {
     WHITE_PAWN
 } from "./chess";
 
+import { fenCharToPiece } from './fen'; 
 
 export class Position {
 
@@ -47,6 +48,13 @@ export class Position {
         return this.squares[this.coordsToIndex(x, y)];
     }
 
+    isWhiteToMove() {
+        return this.whiteToMove;
+    }
+
+    getMoveNumber() {
+        return this.moveNumber;
+    }
 
     getPossibleMoves(startSquare) {        
         const x = startSquare.x;
@@ -376,6 +384,24 @@ export class Position {
 
         }
         return [x1, y1, x2, y2, pp];
+    }
+
+    parseEngineNotation(move) {
+        const x1 = move.charCodeAt(0) - 'a'.charCodeAt(0);
+        const x2 = move.charCodeAt(2) - 'a'.charCodeAt(0);
+        const y1 = 8 - parseInt(move[1]);
+        const y2 = 8 - parseInt(move[3]);
+        if (move.length > 4) {
+            if (this.whiteToMove) {
+                return [x1, y1, x2, y2, fenCharToPiece(move[4].toUpperCase())];
+            }
+            else {
+                return [x1, y1, x2, y2, fenCharToPiece(move[4].toLowerCase())];
+            }
+        }
+        else {
+            return [x1, y1, x2, y2, -1];
+        }
     }
 
     getNotation(x1, y1, x2, y2, pp = -1) {        

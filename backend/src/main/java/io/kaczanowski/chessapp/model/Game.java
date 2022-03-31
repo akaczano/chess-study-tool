@@ -57,6 +57,7 @@ public class Game implements IEntry {
         this.site = g.site;
         this.date = g.date;
         this.result = g.result;
+        this.round = g.round;
         this.startPosition = g.startPosition;
         this.moveText = g.moveText;
     }

@@ -30,7 +30,7 @@ public class GameServiceImpl implements GameService {
     @Override
     public int upsertGame(Game game) {
         if (game.getId() != null && repository.existsById(game.getId())) {
-            Game g = repository.getById(game.getId());
+            Game g = repository.findById(game.getId()).get();
             g.copyFrom(game);
             repository.save(g);
             return g.getId();

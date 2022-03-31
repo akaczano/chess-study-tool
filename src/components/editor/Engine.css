@@ -1,0 +1,44 @@
+.close-engine {
+    float: right;
+}
+
+.close-engine:hover {
+    color: red;
+}
+
+.start-engine-enabled {
+    color: #29c251;
+}
+
+.start-engine-enabled:hover {
+    color: #59fe7d; 
+}
+
+.start-engine-disabled {
+    color: #78ad86;
+}
+
+.stop-engine-disabled {
+    color: #e66060;
+}
+
+.stop-engine-enabled {
+    color: red;
+}
+
+.stop-engine-enabled:hover {
+    color: #ff5454;
+}
+
+.pv {
+    font-size: 13px;
+    margin-left: 2px;    
+}
+
+.pv-enabled:hover {
+    color: blue;
+}
+
+.pv-disabled {
+    color: gray;
+}

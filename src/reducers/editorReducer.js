@@ -1,5 +1,3 @@
-import { GiConsoleController } from "react-icons/gi";
-import { bindActionCreators } from "redux";
 import {
     GAME_LOADED,
     GO_FORWARD,
@@ -67,8 +65,7 @@ const editorReducer = (state=initialState, action) => {
                 errMsg: pgn.error,
                 game: new Game(parseFEN(emptyBoard))
             }
-        }
-        console.log(pgn.games);
+        }        
         return {
             ...state,
             loaded: true,
@@ -112,8 +109,7 @@ const editorReducer = (state=initialState, action) => {
             dirty: state.dirty || state.game !== newGame
         };
     }
-    else if (action.type === GO_TO_MOVE) {
-        console.log(action.payload);
+    else if (action.type === GO_TO_MOVE) {        
         return {...state, game: state.game.getCopy(action.payload)};
     }
     else if (action.type === DELETE_MOVE) {

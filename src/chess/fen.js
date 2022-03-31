@@ -17,7 +17,7 @@ import {
     squareToCoords
 } from "./chess";
 
-const fenCharToPiece = c => {
+export const fenCharToPiece = c => {
     switch (c) {
         case 'p':
             return BLACK_PAWN;
