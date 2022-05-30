@@ -40,7 +40,7 @@ class Square extends React.Component {
                     className="piece"                                                
                     style={{ 
                         position: 'relative',  
-                        backgroundImage: 'url(/'+image + ')', 
+                        backgroundImage: 'url('+image + ')', 
                         width: '95%', 
                         height: '95%', 
                         backgroundSize: 'contain',

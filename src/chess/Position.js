@@ -386,11 +386,14 @@ export class Position {
         return [x1, y1, x2, y2, pp];
     }
 
-    parseEngineNotation(move) {
+    parseEngineNotation(move) {        
         const x1 = move.charCodeAt(0) - 'a'.charCodeAt(0);
         const x2 = move.charCodeAt(2) - 'a'.charCodeAt(0);
         const y1 = 8 - parseInt(move[1]);
         const y2 = 8 - parseInt(move[3]);
+        if (!this.isValidMove(x1, y1, x2, y2)) {
+            return null
+        }
         if (move.length > 4) {
             if (this.whiteToMove) {
                 return [x1, y1, x2, y2, fenCharToPiece(move[4].toUpperCase())];

@@ -1,16 +1,23 @@
-import { createStore, applyMiddleware, compose} from 'redux';
+import { configureStore } from '@reduxjs/toolkit';
 import thunk from 'redux-thunk';
-import rootReducer from './reducers';
+import engineReducer from "./state/engineSlice";
+import directoryReducer from './state/directorySlice'
+import editorReducer from './state/editorSlice';
+import navReducer from './state/navSlice'
 
 const initialState = {}
 
 const middleware = [thunk]
 
-const store = createStore(
-    rootReducer,
+
+const store = configureStore({
+    reducer: {
+        directory: directoryReducer,                        
+        editor: editorReducer,
+        engine: engineReducer,
+        nav: navReducer
+    },
     initialState,
-    compose(
-        applyMiddleware(...middleware)
-    )
-);
+    middleware    
+});
 export default store;

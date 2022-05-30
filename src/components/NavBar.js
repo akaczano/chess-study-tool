@@ -1,29 +1,34 @@
-import { useHistory } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux'
+import { Button } from 'react-bootstrap'
 
-function Navbar(props) {
-    const history = useHistory();
+import { go, DATABASE, LANDING } from '../state/navSlice'
+
+function Navbar() {
+    const dispatch = useDispatch()
+    const { location } = useSelector(state => state.nav)
+
     return (
-        <div style={{ backgroundColor: '#4a4a4a', width: '100%', height: '5vh', position: 'sticky', top: 0 }}>
+        <div style={{ backgroundColor: '#f0f0f0', width: '100%', height: '5vh', position: 'sticky', top: 0 }}>
             <div style={{ height: '100%', width: 'fit-content', marginLeft: '10px', cursor: 'pointer', display: 'inline' }}>
-                <span style={{ height: '100%', color: '#e3e5e6', fontSize: '18px' }}
-                    onClick={() => history.push('/')}
+                <span style={{ height: '100%', color: '#4E65FF', fontSize: '18px' }}
+                    onClick={() => dispatch(go({ location: LANDING }))}
                 >
                     ChessApp
                 </span>
             </div>
             <div style={{ height: '100%', width: 'fit-content', marginLeft: '30px', cursor: 'pointer', display: 'inline' }}>
                 <span style={{ height: '100%', fontSize: '14px' }}>
-                    <a href="/database" style={{color: '#5fbeed'}}>Database</a>
+                    <Button variant="link" onClick={() => dispatch(go({ location: DATABASE }))} style={{color: '#1d6ebf'}}>Database</Button>
                 </span>
             </div>
             <div style={{ height: '100%', width: 'fit-content', marginLeft: '15px', cursor: 'pointer', display: 'inline' }}>
                 <span style={{ height: '100%', fontSize: '14px' }}>
-                    <a href="/openings" style={{color: '#5fbeed'}}>Openings</a>
+                    <a href="/" style={{color: '#1d6ebf'}}>Openings</a>
                 </span>
             </div>
             <div style={{ height: '100%', width: 'fit-content', marginLeft: '15px', cursor: 'pointer', display: 'inline' }}>
                 <span style={{ height: '100%', fontSize: '14px' }}>
-                    <a href="/tactics" style={{color: '#5fbeed'}}>Tactics</a>
+                    <a href="/" style={{color: '#1d6ebf'}}>Tactics</a>
                 </span>
             </div>
         </div>

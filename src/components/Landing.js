@@ -9,7 +9,7 @@ class Landing extends React.Component {
             <Card>
                 <Card.Body>
                     <Card.Title>
-                        <a href="/tactics">Tactics</a>
+                        <a href="/">Tactics</a>
                     </Card.Title>
                     <Card.Text>
                         <ListGroup horizontal>
@@ -41,7 +41,7 @@ class Landing extends React.Component {
             <Card>
                 <Card.Body>
                     <Card.Title>
-                        <a href="/openings">Openings</a>
+                        <a href="/">Openings</a>
                     </Card.Title>
                     <Card.Text>
                         <ListGroup horizontal>

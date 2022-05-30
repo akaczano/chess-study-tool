@@ -1,8 +1,6 @@
-import React from 'react';
-import { connect } from 'react-redux'; 
-import { move } from '../../actions/databaseActions';
+import { useDispatch, useSelector } from 'react-redux';
 
-import { goToMove } from '../../actions/editorActions';
+import { goToMove } from '../../state/editorSlice';
 import { getSymbol } from '../../chess/nag';
 
 const MOVE = 0;
@@ -13,10 +11,11 @@ const MAINLINE = 4;
 const COMMENTARY = 5;
 const NAG = 6;
 
-class NotationDisplay extends React.Component {
+function NotationDisplay() {
+    const dispatch = useDispatch()
+    const game = useSelector(state => state.editor.game)
 
-
-    addMove(node, buffer, moveNumber, useMoveNumber) {        
+    const addMove = (node, buffer, moveNumber, useMoveNumber) => {
         buffer.push({
             type: MOVE,
             text: node.move,
@@ -24,9 +23,9 @@ class NotationDisplay extends React.Component {
             moveNumber,
             useMoveNumber,
             nags: node.nags,
-            goTo: () => this.props.goToMove(node)
+            goTo: () => dispatch(goToMove(node))
         });
-        
+
         if (node.annotation.length > 0) {
             buffer.push({
                 type: COMMENTARY,
@@ -35,16 +34,16 @@ class NotationDisplay extends React.Component {
         }
     }
 
-    listMoves(pos) {
+    const listMoves = pos => {
         const tokens = [];
         let mainlineBuffer = [];
         let mn = 0;
 
-        while (pos.mainline) {            
+        while (pos.mainline) {
             let useMoveNumber = mn % 2 === 0;
             let moveNumber = Math.trunc(mn++ / 2) + 1;
             moveNumber += useMoveNumber ? '.' : '...';
-            this.addMove(pos.mainline, mainlineBuffer, moveNumber,
+            addMove(pos.mainline, mainlineBuffer, moveNumber,
                 useMoveNumber || mainlineBuffer.length < 1);
             if (pos.alternatives.length > 0) {
                 tokens.push({
@@ -55,8 +54,8 @@ class NotationDisplay extends React.Component {
             }
             for (const alt of pos.alternatives) {
                 let sideline = [];
-                this.addMove(alt, sideline, moveNumber, true)
-                this.flatten(sideline, alt, mn);
+                addMove(alt, sideline, moveNumber, true)
+                flatten(sideline, alt, mn);
                 tokens.push({
                     type: SIDELINE,
                     tokens: sideline
@@ -74,28 +73,28 @@ class NotationDisplay extends React.Component {
     }
 
     // [Bc4, Nf6, Ng5, d5, exd5, Na5, Bb5+, c6, dxc6, bxc6, Be2, (, Qf3]
-    flatten(tokens, node, mn) {
+    const flatten = (tokens, node, mn) => {
         if (!node.mainline) return;
         let moveNumber = Math.trunc(mn / 2) + 1;
         let useMoveNumber = mn % 2 === 0;
         moveNumber += useMoveNumber ? '.' : '...';
-        this.addMove(node.mainline, tokens, moveNumber, useMoveNumber);        
+        addMove(node.mainline, tokens, moveNumber, useMoveNumber);
 
         for (const alt of node.alternatives) {
             tokens.push({ type: START_VARIATION });
-            this.addMove(alt, tokens, moveNumber, true);
-           
-            this.flatten(tokens, alt, mn + 1);
+            addMove(alt, tokens, moveNumber, true);
+
+            flatten(tokens, alt, mn + 1);
             tokens.push({ type: END_VARIATION });
         }
-        this.flatten(tokens, node.mainline, mn + 1);
+        flatten(tokens, node.mainline, mn + 1);
     }
 
+    let tokCount = 0
 
-
-    renderToken(tok) {
+    const renderToken = tok => {
         if (tok.type === MOVE) {
-            const className = this.props.game.current.key == tok.key ?
+            const className = game.current.key == tok.key ?
                 'notation-current' : 'notation-move';
             const text = (tok.useMoveNumber ? tok.moveNumber + tok.text : tok.text);
             let style = {}
@@ -114,22 +113,22 @@ class NotationDisplay extends React.Component {
             );
         }
         else if (tok.type === START_VARIATION) {
-            return <span key={'tok' + this.tokCount++} className="notation-delimiter">(</span>
+            return <span key={'tok' + tokCount++} className="notation-delimiter">(</span>
         }
         else if (tok.type === END_VARIATION) {
-            return <span key={'tok' + this.tokCount++} className="notation-delimiter">)</span>
+            return <span key={'tok' + tokCount++} className="notation-delimiter">)</span>
         }
         else if (tok.type === SIDELINE) {
             return (
-                <div key={'tok' + this.tokCount++} className="notation-sideline">                    
-                    {tok.tokens.map(t => this.renderToken(t))}
+                <div key={'tok' + tokCount++} className="notation-sideline">
+                    {tok.tokens.map(t => renderToken(t))}
                 </div>
             );
         }
         else if (tok.type === MAINLINE) {
             return (
-                <div key={'tok' + this.tokCount++} className="notation-mainline">
-                    {tok.tokens.map(t => this.renderToken(t))}
+                <div key={'tok' + tokCount++} className="notation-mainline">
+                    {tok.tokens.map(t => renderToken(t))}
                 </div>
             );
         }
@@ -140,22 +139,15 @@ class NotationDisplay extends React.Component {
             return <span className="nag">{getSymbol(tok.value)}</span>
         }
     }
+    
+    const tokens = listMoves(game.head);
+    return (
+        <div className="notation-body">
+            {tokens.map(t => renderToken(t))}
+        </div>
+    );
 
-    render() {
-        this.tokCount = 0;
-        const tokens = this.listMoves(this.props.game.head);
-        return (
-            <div className="notation-body">
-                {tokens.map(t => this.renderToken(t))}
-            </div>
-        );
-    }
 }
 
-const mapStateToProps = state => {
-    return {
-        game: state.editor.game
-    };
-};
 
-export default connect(mapStateToProps, { goToMove })(NotationDisplay);
+export default NotationDisplay

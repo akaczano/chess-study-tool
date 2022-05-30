@@ -1,26 +1,38 @@
-import React from 'react';
-import { Modal, Button, Form, Row, Col } from 'react-bootstrap';
-import { connect } from 'react-redux';
+import { useEffect } from 'react';
+import { Modal, Button, Form, Row, Col, Spinner } from 'react-bootstrap';
+import { useDispatch, useSelector } from 'react-redux';
 
-import { 
+import {
     closeModal,
     loadList,
     loadEngine,
     setSelection,
     setOption,
-    closeEngine  
-} from '../../actions/engineActions';
+    closeEngine
+} from '../../state/engineSlice';
 
-class EngineDialog extends React.Component {
+function EngineDialog() {
+    const dispatch = useDispatch()
 
-    componentDidMount() {
-        this.props.loadList();
-    }
+    const {
+        optionValues,
+        loaded,
+        loading,
+        engineNames,
+        showModal,
+        selection,
+        options
+    } = useSelector(state => state.engine)
+    
+    useEffect(() => {
+        dispatch(loadList())
+    }, [dispatch])
+    
 
-    renderOption = opt => {
-        const val = this.props.values.filter(v => v.name === opt.name)[0].value;
-        const handler = e => { this.props.setOption(opt.name, e.target.value)}
-        if (opt.type === "STRING") {
+    const renderOption = opt => {        
+        const val = optionValues.filter(v => v.name === opt.name)[0].value;
+        const handler = e => { dispatch(setOption({name: opt.name, value: e.target.value})) }        
+        if (opt.type === "string") {
             return (
                 <Form.Group key={opt.name}>
                     <Form.Label>{opt.name}</Form.Label>
@@ -28,14 +40,14 @@ class EngineDialog extends React.Component {
                 </Form.Group>
             );
         }
-        else if (opt.type === "CHECK") {
+        else if (opt.type === "check") {
             return (
                 <Form.Group key={opt.name}>
                     <Form.Check type="checkbox" label={opt.name} checked={val} onChange={handler} />
                 </Form.Group>
             )
         }
-        else if (opt.type === "SPIN") {
+        else if (opt.type === "spin") {
             return (
                 <Form.Group key={opt.name}>
                     <Form.Label>{opt.name}</Form.Label>
@@ -45,71 +57,59 @@ class EngineDialog extends React.Component {
         }
     }
 
-    render() {     
-        const loadHandler = this.props.engineKey ? 
-            () => this.props.closeEngine() :
-            () => this.props.loadEngine(this.props.names[this.props.selection]);
-        return (
-            <Modal show={this.props.show} onHide={() => this.props.closeModal()}>
-                <Modal.Header closeButton>
-                    Start analysis
-                </Modal.Header>
-                <Modal.Body>
-                    <Form>
+
+    const loadHandler = loaded ?
+        () => dispatch(closeEngine()) :
+        () => dispatch(loadEngine(engineNames[selection]))
+    
+    return (
+        <Modal show={showModal} onHide={() => dispatch(closeModal())}>
+            <Modal.Header closeButton>
+                Start analysis
+            </Modal.Header>
+            <Modal.Body>
+                <Form>
                     <Form.Group>
                         <Form.Label>Engine</Form.Label>
-                        <Row>                            
-                            <Col md={9}>                                
+                        <Row>
+                            <Col md={9}>
                                 <select
                                     className="form-control"
-                                    value={this.props.selection}
-                                    onChange={e => this.props.setSelection(e.target.value)}
-                                    disabled={this.props.engineKey}
-                                >                                    
-                                    {this.props.names.map((n, i) => {
+                                    value={selection}
+                                    onChange={e => dispatch(setSelection(e.target.value))}
+                                    disabled={loaded}
+                                >
+                                    {engineNames.map((n, i) => {
                                         return (
                                             <option key={n} value={i}>{n}</option>
                                         )
                                     })}
-                                </select>                                
+                                </select>
                             </Col>
-                            <Col md={3}>                                
+                            <Col md={3}>
                                 <Button
-                                    variant="primary" 
-                                    onClick={loadHandler}                                    
-                                    style={{float: 'bottom'}}                                    
+                                    variant="primary"
+                                    onClick={loadHandler}
+                                    style={{ float: 'bottom' }}
                                 >
-                                    {this.props.engineKey ? 'Unload' : 'Load'}
-                                </Button>                                                                
+                                    {loading ? <Spinner animation="border" /> : (loaded ? 'Unload' : 'Load')}
+                                </Button>
                             </Col>
                         </Row>
-                        </Form.Group>
-                        <hr />
-                        <div style={{ maxHeight: '50vh', overflowY: 'auto' }}>
-                            {this.props.options?.map(this.renderOption)}
-                        </div>
-                    </Form>
-                </Modal.Body>
-                <Modal.Footer>                                        
-                    <Button variant="primary" onClick={() => this.props.closeModal()}>Done</Button>                    
-                </Modal.Footer>
-            </Modal>
-        );
-    }
+                    </Form.Group>
+                    <hr />
+                    <div style={{ maxHeight: '50vh', overflowY: 'auto' }}>
+                        {options?.map(renderOption)}
+                    </div>
+                </Form>
+            </Modal.Body>
+            <Modal.Footer>
+                <Button variant="primary" onClick={() => dispatch(closeModal())}>Done</Button>
+            </Modal.Footer>
+        </Modal>
+    );
+
 }
 
-const mapStateToProps = state => {    
-    return {
-        show: state.engine.showModal,
-        names: state.engine.engineNames,
-        options: state.engine.options,
-        selection: state.engine.selection,
-        values: state.engine.optionValues,
-        engineKey: state.engine.key
-    };
-};
-
-export default connect(mapStateToProps, {
-    closeModal, loadList, loadEngine, setSelection, setOption, closeEngine
-})(EngineDialog);
+export default EngineDialog
 

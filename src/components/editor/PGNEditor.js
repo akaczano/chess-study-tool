@@ -1,14 +1,14 @@
-import React from 'react';
-import { Container, Row, Col, Modal, Spinner, Button, Alert } from 'react-bootstrap';
-import { connect } from 'react-redux';
+import { useState, useEffect } from 'react'
+import { Container, Row, Col, Modal, Spinner, Button, Alert } from 'react-bootstrap'
+import { useDispatch, useSelector } from 'react-redux'
 
-import NavButtons from './NavButtons';
-import ChessBoard from './ChessBoard';
-import PGNDisplay from './PGNDisplay';
-import DataModal from './DataModal';
-import PositionModal from './PositionModal';
-import EngineDialog from './EngineDialog';
-import EngineDisplay from './EngineDisplay';
+import NavButtons from './NavButtons'
+import ChessBoard from './ChessBoard'
+import PGNDisplay from './PGNDisplay'
+import DataModal from './DataModal'
+import PositionModal from './PositionModal'
+import EngineDialog from './EngineDialog'
+import EngineDisplay from './EngineDisplay'
 import {
     loadGame,
     goForward,
@@ -19,186 +19,173 @@ import {
     setModal,
     saveGame,
     clearError
-} from '../../actions/editorActions';
-import { resetEngine, restartIfNeeded } from '../../actions/engineActions';
+} from '../../state/editorSlice';
+import { resetEngine, restartIfNeeded } from '../../state/engineSlice';
+import { DATABASE, go } from '../../state/navSlice'
 
-class PGNEditor extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = { reversed: false };
-    }
+function PGNEditor() {
+    const [reversed, setReversed] = useState(false)
 
-    componentDidMount() {
-        /*document.addEventListener("keydown", e => {
+    const dispatch = useDispatch()
+    const state = useSelector(state => state.editor)
+    const { loaded } = useSelector(state => state.engine)
+        
+    const id = useSelector(state => state.nav.params.id)    
+    const parentParam = useSelector(state => state.nav.params.parent)    
+    
+    useEffect(() => {
+        const fun = e => {
             if (e.key == 'ArrowLeft') {
-                this.props.goBackward();
+                backward()                  
+                document.getElementById('move' + state.game.current.prev?.key)?.scrollIntoViewIfNeeded();
             }
             else if (e.key == 'ArrowRight') {
-                this.props.goForward();
-            }
-        });*/
-        this.props.loadGame(this.props.match.params.id); 
-        this.props.resetEngine();       
+                forward()
+            }            
+        }
+        document.addEventListener("keydown", fun)
+        return () => document.removeEventListener("keydown", fun)
+    })
+
+    useEffect(() => {                
+        dispatch(loadGame(id))
+        dispatch(resetEngine())               
+    }, [dispatch, id])
+
+    const getParent = () => {
+        if (state.gameData.parent_id) return state.gameData.parent_id;
+        return parentParam
     }
 
-    getParent() {
-        if (this.props.data.parent_id) return this.props.data.parent_id;
-        const search = this.props.location.search;
-        const parent = new URLSearchParams(search).get('parent');        
-        return parent == 'null' ? null : parseInt(parent);
-    }
-
-    getAlert() {
-        if (this.props.error) {
+    const getAlert = () => {
+        if (state.error) {
             return (
-                <Alert variant="danger" onClose={this.props.clearError} dismissible>
-                    {this.props.error}
+                <Alert variant="danger" onClose={() => dispatch(clearError())} dismissible>
+                    {state.error}
                 </Alert>
             );
         }
         return null;
     }
 
-    flipBoard() {
-        this.setState({ reversed: !this.state.reversed });
-        console.log('test: ' + this.state.reversed);
+    const flipBoard = () => {
+        setReversed(!reversed)
     }
 
-    goToStart = () => {
-        this.props.goToStart();
-        document.getElementById('move' + this.props.game.head.mainline?.key)?.scrollIntoViewIfNeeded();
+    const start = () => {
+        dispatch(goToStart())
+        document.getElementById('move' + state.game.head.mainline?.key)?.scrollIntoViewIfNeeded();
     }
 
-    goToEnd = () => {
-        this.props.goToEnd();
-        document.getElementById('move' + this.props.game.getTail().key)?.scrollIntoViewIfNeeded();
+    const end = () => {
+        dispatch(goToEnd())
+        document.getElementById('move' + state.game.getTail().key)?.scrollIntoViewIfNeeded();
     }
 
-    goForward = () => {
-        this.props.goForward();
-        document.getElementById('move' + this.props.game.current.mainline?.key)?.scrollIntoViewIfNeeded();
+    const forward = () => {
+        dispatch(goForward())
+        document.getElementById('move' + state.game.current.mainline?.key)?.scrollIntoViewIfNeeded();
     }
 
-    goBackward = () => {
-        this.props.goBackward();
-        document.getElementById('move' + this.props.game.current.prev?.key)?.scrollIntoViewIfNeeded();
+    const backward = () => {
+        dispatch(goBackward())        
+        document.getElementById('move' + state.game.current.prev?.key)?.scrollIntoViewIfNeeded();
     }
 
-    onSave = () => {
-        this.props.saveGame(this.getParent());
+    const onSave = () => {
+        console.log(getParent())
+        dispatch(saveGame(getParent()))
     }
 
-    onClose = () => {
-        let p = this.getParent();
-        this.props.history.push('/database/' + (p ? p : ''));
+    const onClose = () => {
+        let p = getParent();
+        dispatch(go({ location: DATABASE, params: p ? p : '' }))
     }
 
-    render() {
-        if (!this.props.loaded) {
-            return (
-                <Modal show={true}>
-                    <Modal.Header>
-                        <h4>Please wait</h4>
-                    </Modal.Header>
-                    <Modal.Body>
-                        <span style={{ fontSize: '18px' }}>
-                            Loading game...
-                        </span>
-                        <Spinner animation="border" variant="primary" style={{ float: 'right' }} />
-                    </Modal.Body>
-                </Modal>
-            );
-        }
-        
+
+    if (!state.loaded) {
         return (
-            <Container style={{ margin: 0 }}>
-
-                <DataModal />
-                <PositionModal />
-                <EngineDialog />
-
-                <Row style={{ height: '100%', width: '100%', margin: 0 }}>
-
-                    <Col md={7}>
-                        <div style={{ width: '100%', textAlign: 'center' }}>
-                            <strong style={{fontSize: '19px'}}>
-                                {this.props.white_name + ' '}
-                                ({this.props.white_rating})
-                                {this.props.result == '*' ? ' - ' : ` ${this.props.result} `}
-                                {this.props.black_name + ' '}
-                                ({this.props.black_rating})
-                            </strong><br />
-                            <span style={{ color: '#828281', fontSize: '14px' }}>
-                                {this.props.event}, {this.props.site} ({this.props.date?.toLocaleDateString()})
-                            </span>
-                        </div>
-                        <ChessBoard
-                            position={this.props.game.getCurrentPosition()}
-                            onMove={this.props.doMove}
-                            style={{ width: '73vh', height: '73vh', margin: 'auto' }}
-                            reversed={this.state.reversed}
-                            onRender={() => this.props.restartIfNeeded() }
-                        />
-                        <div style={{ width: '73vh', margin: 'auto' }}>
-                            <NavButtons
-                                onFlip={() => this.flipBoard()}
-                                onGoForward={this.goForward}
-                                onGoBack={this.goBackward}
-                                onGoToStart={this.goToStart}
-                                onGoToEnd={this.goToEnd}
-                                backwardEnabled={this.props.game.canGoBackward()}
-                                forwardEnabled={this.props.game.canGoForward()}
-                            />
-                        </div>
-
-                    </Col>
-                    <Col md={5} >
-                        {this.getAlert()}                        
-                        <PGNDisplay
-                            game={this.props.game}
-                            onUpdate={() => this.setState({ game: this.props.game })} 
-                            onSave={this.onSave}
-                            onClose={this.onClose}
-                        />    
-                        {this.props.engineKey ? <EngineDisplay /> : null}                    
-                    </Col>
-                </Row>
-            </Container>
+            <Modal show={true}>
+                <Modal.Header>
+                    <h4>Please wait</h4>
+                </Modal.Header>
+                <Modal.Body>
+                    <span style={{ fontSize: '18px' }}>
+                        Loading game...
+                    </span>
+                    <Spinner animation="border" variant="primary" style={{ float: 'right' }} />
+                </Modal.Body>
+            </Modal>
         );
     }
+
+    const { 
+        white_name,
+        black_name,
+        white_rating,
+        black_rating,
+        result,
+        event,
+        site,
+        date
+    } = state.gameData
+
+    return (
+        <Container style={{ margin: 0 }}>
+
+            <DataModal />
+            <PositionModal />
+            <EngineDialog />
+
+            <Row style={{ height: '100%', width: '100%', margin: 0 }}>
+
+                <Col md={7}>
+                    <div style={{ width: '100%', textAlign: 'center' }}>
+                        <strong style={{ fontSize: '19px' }}>
+                            {white_name + ' '}
+                            ({white_rating})
+                            {result == '*' ? ' - ' : ` ${result} `}
+                            {black_name + ' '}
+                            ({black_rating})
+                        </strong><br />
+                        <span style={{ color: '#828281', fontSize: '14px' }}>
+                            {event}, {site} ({date?.toLocaleDateString()})
+                        </span>
+                    </div>
+                    <ChessBoard
+                        position={state.game.getCurrentPosition()}
+                        onMove={ (a, b, c, d) => dispatch(doMove([a, b, c, d]))}
+                        style={{ width: '73vh', height: '73vh', margin: 'auto' }}
+                        reversed={reversed}
+                        onRender={() => dispatch(restartIfNeeded())}
+                    />
+                    <div style={{ width: '73vh', margin: 'auto' }}>
+                        <NavButtons
+                            onFlip={() => flipBoard()}
+                            onGoForward={forward}
+                            onGoBack={backward}
+                            onGoToStart={start}
+                            onGoToEnd={end}
+                            backwardEnabled={state.game.canGoBackward()}
+                            forwardEnabled={state.game.canGoForward()}
+                        />
+                    </div>
+
+                </Col>
+                <Col md={5} >
+                    {getAlert()}
+                    <PGNDisplay
+                        game={state.game}
+                        /*onUpdate={() => this.setState({ game: this.props.game })}*/
+                        onSave={onSave}
+                        onClose={onClose}
+                    />
+                    {loaded ? <EngineDisplay /> : null}
+                </Col>
+            </Row>
+        </Container>
+    );
+
 }
 
-const mapStateToProps = state => {
-    return {
-        loaded: state.editor.loaded,
-        game: state.editor.game,
-        white_name: state.editor.gameData.white_name,
-        black_name: state.editor.gameData.black_name,
-        white_rating: state.editor.gameData.white_rating,
-        black_rating: state.editor.gameData.black_rating,
-        event: state.editor.gameData.event,
-        site: state.editor.gameData.site,
-        date: state.editor.gameData.date,
-        result: state.editor.gameData.result,
-        data: state.editor.gameData,
-        round: state.editor.gameData.round,
-        dirty: state.editor.dirty,
-        saving: state.editor.saving,
-        error: state.editor.error,
-        engineKey: state.engine.key
-    };
-}
-
-export default connect(mapStateToProps, {
-    loadGame,
-    goForward,
-    goBackward,
-    goToStart,
-    goToEnd,
-    doMove,
-    setModal,
-    saveGame,
-    clearError,
-    resetEngine,
-    restartIfNeeded
-})(PGNEditor);
+export default PGNEditor

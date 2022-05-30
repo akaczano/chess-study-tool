@@ -1,0 +1,14 @@
+{
+    "connection": {
+        "database": "postgres",
+        "username": "postgres",
+        "password": "password",
+        "options": {
+            "dialect": "postgres",
+            "host": "localhost",
+            "port": "5433",
+            "quoteIdentifiers": false           
+        }
+    },
+    "path": "./backend/engines"
+}

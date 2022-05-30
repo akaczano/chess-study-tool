@@ -14,6 +14,43 @@
     color: pink;
 }
 
-.select-icon:hover {    
-    color: gray;
+.dir-tab {
+    float: left;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    transition: 0.3s;
+    width: 20%;    
+    background-color: #d8d8d8;
+}
+
+.dir-tab:hover {
+    background-color: #c9c9c9;
+}
+
+.dir-tab.active {
+    background-color: #363636;
+    color: white;
+}
+
+
+/* width */
+::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+}
+  
+/* Track */
+::-webkit-scrollbar-track {
+background: #f1f1f1; 
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+background: #888; 
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+background: #555; 
 }
