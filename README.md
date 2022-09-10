@@ -9,6 +9,7 @@ practice tactics, and more without relying on a 3rd-party platform like chess.co
   - Organize and search chess games
   - Import and export games from PGN
   - Replay the games with engine analysis using any UCI chess engine
+  - Store the games in the SQL database of your choosing, whether that be in a SQLite file or a remote PostgreSQL server, or otherwise.
 - Study Tool
   - Quiz yourself on opening preparation, or practice solving tactical puzzles.
   - Customize your study sessions by handpicking which variations to study and how deep to go.
