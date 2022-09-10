@@ -6,7 +6,7 @@ const fs = require('fs')
 const DirectoryManager = require('./directory')
 const EngineManager = require('./engine')
 
-const defaultPath = './backend/engine'
+const defaultPath = './engines'
 
 const dirManager = new DirectoryManager()
 const engineManager = new EngineManager(defaultPath)
@@ -18,8 +18,7 @@ function createWindow() {
         height: 600,
         webPreferences: {
             preload: path.join(__dirname, 'preload.js')            
-        },
-        icon: path.join(__dirname, '../public/chess.png')
+        }        
     })
 
     win.loadURL(process.env.ELECTRON_START_URL || url.format({
@@ -58,6 +57,16 @@ init().then(() => {
     ipcMain.handle('directory:postGame', async (_, game) => await dirManager.postGame(game))
     ipcMain.handle('directory:deleteGame', async (_, id) => await dirManager.deleteGame(id))
     ipcMain.handle('directory:downloadGames', async (_, ids) => await dirManager.downloadGames(ids))    
+    ipcMain.handle('template:create', async (_, description, files) => await dirManager.createTemplate(description, files))
+    ipcMain.handle('template:list', async () => await dirManager.listTemplates())
+    ipcMain.handle('template:delete', async(_, id) => await dirManager.deleteTemplate(id))
+    ipcMain.handle('template:get', async (_, id) => await dirManager.getTemplate(id))
+    ipcMain.handle('session:create', async (_, description, template, vars) => await dirManager.createSession(description, template, vars))
+    ipcMain.handle('session:list', async () => await dirManager.listSessions())
+    ipcMain.handle('session:delete', async (_, id) => await dirManager.deleteSession(id))
+    ipcMain.handle('session:nextVariation', async (_, session_id) => await dirManager.nextVariation(session_id))
+    ipcMain.handle('session:loadVariation', async (_, session_id) => await dirManager.loadVariation(session_id))
+    ipcMain.handle('session:updateVariation', async (_, variation) => await dirManager.updateVariation(variation))
     ipcMain.handle('engine:getList', async () => await engineManager.getList())
     ipcMain.handle('engine:loadEngine', async (_, name) => await engineManager.loadEngine(name))
     ipcMain.handle('engine:startEngine', async (_, pid, position, options) => await engineManager.startEngine(pid, position, options))

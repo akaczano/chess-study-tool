@@ -1,7 +1,7 @@
 import { useDispatch, useSelector } from 'react-redux'
 import { Button } from 'react-bootstrap'
 
-import { go, DATABASE, LANDING } from '../state/navSlice'
+import { go, DATABASE, LANDING, STUDY } from '../state/navSlice'
 
 function Navbar() {
     const dispatch = useDispatch()
@@ -21,14 +21,9 @@ function Navbar() {
                     <Button variant="link" onClick={() => dispatch(go({ location: DATABASE }))} style={{color: '#1d6ebf'}}>Database</Button>
                 </span>
             </div>
-            <div style={{ height: '100%', width: 'fit-content', marginLeft: '15px', cursor: 'pointer', display: 'inline' }}>
+            <div style={{ height: '100%', width: 'fit-content', marginLeft: '30px', cursor: 'pointer', display: 'inline' }}>
                 <span style={{ height: '100%', fontSize: '14px' }}>
-                    <a href="/" style={{color: '#1d6ebf'}}>Openings</a>
-                </span>
-            </div>
-            <div style={{ height: '100%', width: 'fit-content', marginLeft: '15px', cursor: 'pointer', display: 'inline' }}>
-                <span style={{ height: '100%', fontSize: '14px' }}>
-                    <a href="/" style={{color: '#1d6ebf'}}>Tactics</a>
+                    <Button variant="link" onClick={() => dispatch(go({ location: STUDY }))} style={{color: '#1d6ebf'}}>Study</Button>
                 </span>
             </div>
         </div>

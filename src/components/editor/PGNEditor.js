@@ -20,7 +20,7 @@ import {
     saveGame,
     clearError
 } from '../../state/editorSlice';
-import { resetEngine, restartIfNeeded } from '../../state/engineSlice';
+import { closeEngine, restartIfNeeded, stopEngine } from '../../state/engineSlice';
 import { DATABASE, go } from '../../state/navSlice'
 
 function PGNEditor() {
@@ -29,27 +29,30 @@ function PGNEditor() {
     const dispatch = useDispatch()
     const state = useSelector(state => state.editor)
     const { loaded } = useSelector(state => state.engine)
-        
-    const id = useSelector(state => state.nav.params.id)    
-    const parentParam = useSelector(state => state.nav.params.parent)    
-    
+
+    const id = useSelector(state => state.nav.params.id)
+    const parentParam = useSelector(state => state.nav.params.parent)
+
     useEffect(() => {
         const fun = e => {
             if (e.key == 'ArrowLeft') {
-                backward()                  
+                backward()
                 document.getElementById('move' + state.game.current.prev?.key)?.scrollIntoViewIfNeeded();
             }
             else if (e.key == 'ArrowRight') {
                 forward()
-            }            
+            }
         }
         document.addEventListener("keydown", fun)
         return () => document.removeEventListener("keydown", fun)
     })
 
-    useEffect(() => {                
-        dispatch(loadGame(id))
-        dispatch(resetEngine())               
+    useEffect(() => {
+        dispatch(loadGame(id))        
+        return () => {            
+            dispatch(stopEngine())
+            dispatch(closeEngine())
+        }
     }, [dispatch, id])
 
     const getParent = () => {
@@ -88,7 +91,7 @@ function PGNEditor() {
     }
 
     const backward = () => {
-        dispatch(goBackward())        
+        dispatch(goBackward())
         document.getElementById('move' + state.game.current.prev?.key)?.scrollIntoViewIfNeeded();
     }
 
@@ -100,6 +103,11 @@ function PGNEditor() {
     const onClose = () => {
         let p = getParent();
         dispatch(go({ location: DATABASE, params: p ? p : '' }))
+    }
+
+    const onMove = (a, b, c, d, e) => {
+        dispatch(doMove([a, b, c, d, e]))
+        document.getElementById('move' + state.game.current.prev?.key)?.scrollIntoViewIfNeeded();
     }
 
 
@@ -119,7 +127,7 @@ function PGNEditor() {
         );
     }
 
-    const { 
+    const {
         white_name,
         black_name,
         white_rating,
@@ -127,8 +135,32 @@ function PGNEditor() {
         result,
         event,
         site,
-        date
+        date,
+        type,
+        side,
+        description
     } = state.gameData
+
+    const getTitle = () => {
+        if (type == 1) {
+            return `${white_name} (${white_rating}) ${result == '*' ? ' - ' : result} ${black_name} (${black_rating})`            
+        }
+        else {
+            return description
+        }
+    }
+
+    const getSubTitle = () => {
+        if (type == 1) {
+            return `${event}, ${site} (${date?.toLocaleDateString()})`
+        }
+        else if (type === 2) {
+            return side ? 'For Black' : 'For White'
+        }
+        else {
+            return null
+        }
+    }
 
     return (
         <Container style={{ margin: 0 }}>
@@ -142,19 +174,15 @@ function PGNEditor() {
                 <Col md={7}>
                     <div style={{ width: '100%', textAlign: 'center' }}>
                         <strong style={{ fontSize: '19px' }}>
-                            {white_name + ' '}
-                            ({white_rating})
-                            {result == '*' ? ' - ' : ` ${result} `}
-                            {black_name + ' '}
-                            ({black_rating})
+                            {getTitle()}
                         </strong><br />
                         <span style={{ color: '#828281', fontSize: '14px' }}>
-                            {event}, {site} ({date?.toLocaleDateString()})
+                            {getSubTitle()}
                         </span>
                     </div>
                     <ChessBoard
                         position={state.game.getCurrentPosition()}
-                        onMove={ (a, b, c, d) => dispatch(doMove([a, b, c, d]))}
+                        onMove={onMove}
                         style={{ width: '73vh', height: '73vh', margin: 'auto' }}
                         reversed={reversed}
                         onRender={() => dispatch(restartIfNeeded())}

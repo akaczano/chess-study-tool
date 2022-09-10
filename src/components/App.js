@@ -6,11 +6,12 @@ import store from '../store';
 
 
 import Landing from './Landing';
-import Tactics from './Tactics';
 import Database from './Database';
 import PGNEditor from './editor/PGNEditor';
 
-import { LANDING, DATABASE, EDITOR } from '../state/navSlice'
+import { LANDING, DATABASE, EDITOR, STUDY, QUIZ } from '../state/navSlice'
+import StudyLanding from './study/StudyLanding';
+import Quiz from './study/Quiz'
 
 function NavControl() {  
   const { location } = useSelector(state => state.nav)  
@@ -22,6 +23,12 @@ function NavControl() {
   }
   else if (location === EDITOR) {
     return <PGNEditor />
+  }
+  else if (location === STUDY) {
+    return <StudyLanding />
+  }
+  else if (location === QUIZ) {
+    return <Quiz />
   }
 }
 

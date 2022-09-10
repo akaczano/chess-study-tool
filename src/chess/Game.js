@@ -46,6 +46,11 @@ class Game {
         return this.current.move;
     }
 
+    getNextMove() {
+        if (this.current.mainline) return this.current.mainline.move
+        return null
+    }
+
     getCurrentPosition() {
         return this.current.position;
     }
@@ -232,6 +237,38 @@ class Game {
         }
         return text;
     }
+
+    flatten() {
+        let strings = []
+        let queue = [[this.head.mainline, '', 0]]        
+        while (queue.length > 0) {
+            let [curr, movetext, ply] = queue.pop()                        
+            while (curr) {                
+
+
+                if (ply % 2 == 0) {
+                    movetext += ((ply / 2) + 1)
+                    movetext += '. '
+                }
+                ply++                
+                movetext += curr.move
+                movetext += ' '
+                if (curr.nags.length  > 0) {
+                    for (const nag of curr.nags) {
+                        if (nag) movetext += `$${nag} `;
+                    }                
+                }
+                          
+                for (const alt of curr.alternatives) {
+                    queue.push([alt, movetext, ply])
+                }
+
+                curr = curr.mainline
+            }
+            strings.push(movetext)
+        }
+        return strings
+    }    
 }
 
 

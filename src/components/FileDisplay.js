@@ -22,11 +22,7 @@ import { EDITOR, DATABASE, go } from '../state/navSlice'
 import IconButton from './IconButton';
 
 function FileDisplay() {
-    const dispatch = useDispatch()
-    
-
-    const [selectedTab, setSelectedTab] = useState(0)
-    const [sortField, setSortField] = useState([4, 0])    
+    const dispatch = useDispatch()            
 
     const {
         files,
@@ -37,25 +33,29 @@ function FileDisplay() {
         moveSource,
         moving,
         selection,
-        filter   
+        filter
     } = useSelector(state => state.directory)
 
-
+        
+    const [selectedTab, setSelectedTab] = useState(0)    
+    const [sortField, setSortField] = useState([4, 0])
+    if (!files) return null
+    const enabled = [0, 1, 2, 3].map(t => files.filter(f => f.type == t).length > 0);        
+    const tabs = [0, 1, 2, 3].filter(t => enabled[t])        
+    if (tabs.length > 0 && !enabled[selectedTab]) setSelectedTab(tabs[0])
+    
     const getTabs = () => {
-        const tabs = ['Folders', 'Games'];
-        const enabled = [0, 1].map(t => files.filter(f => f.type == t).length > 0);
-        if (enabled.filter(e => e).length <= selectedTab) setSelectedTab(0)
-        if (enabled.filter(e => e).length < 2) return null;
+        const tabNames = ['Folders', 'Games', 'Openings', 'Puzzles'];                
+        if (tabs.length < 2) return null
         return (
             <Row style={{ backgroundColor: '#f1f1f1', margin: '0px', height: '7%', marginBottom: '5px' }}>
-                {tabs.map((t, i) => {
-                    if (!enabled[i]) return null;
+                {tabs.map(t => {                    
                     return (
-                        <button style={{ maxHeight: '100%', fontSize: '14px' }}
-                            className={selectedTab === i ? "dir-tab active" : "dir-tab"}
-                            onClick={() => setSelectedTab(i)}
+                        <button key={t} style={{ maxHeight: '100%', fontSize: '14px' }}
+                            className={selectedTab === t ? "dir-tab active" : "dir-tab"}
+                            onClick={() =>  setSelectedTab(t)}
                         >
-                            {t}
+                            {tabNames[t]}
                         </button>
                     )
                 })}
@@ -182,7 +182,7 @@ function FileDisplay() {
                         const validTarget = ms && (ms.key !== d.key || ms.type !== 0)
                         const labelStyle = validTarget ? { color: 'green' } : { color: 'black' }
                         const handler = validTarget ?
-                            () => dispatch(move({type: ms.type, id: ms.id, parent_id: d.id})) :
+                            () => dispatch(move({ type: ms.type, id: ms.id, parent_id: d.id })) :
                             () => dispatch(go({ location: DATABASE, params: d.id }))
 
                         label = (
@@ -196,7 +196,7 @@ function FileDisplay() {
                         );
                     }
                     return (
-                        <ListGroup.Item>
+                        <ListGroup.Item key={d.key}>
                             <AiFillFolder style={{ marginRight: '15px' }} />
                             {label}
                             {getDeleteButton(d)}
@@ -212,7 +212,7 @@ function FileDisplay() {
     const getSortButtons = i => {
         const [field, dir] = sortField;
         return (
-            <span style={{float: 'right', marginLeft: '5px'}}>
+            <span style={{ float: 'right', marginLeft: '5px' }}>
                 {[0, 1].map(d => {
                     const handler = () => setSortField([i, d])
                     return (
@@ -223,7 +223,7 @@ function FileDisplay() {
                             hoverColor="#72edd7"
                             disabled={i === field && d === dir}
                             onClick={handler}
-                            style={{marginRight: '5px'}}
+                            style={{ marginRight: '5px' }}
                         >
                             {d === 0 ? <BsSortUpAlt /> : <BsSortDownAlt />}
                         </IconButton>
@@ -244,30 +244,30 @@ function FileDisplay() {
                 case 4: return g.date;
                 case 5: return g.event;
                 case 6: return g.round;
-                case 7: return g.result;  
+                case 7: return g.result;
             }
         }
-        
+
         const first = getField(a, field);
         const second = getField(b, field);
         if (!second) return -1;
         if (!first) return 1;
 
         if (dir === 0) {
-            if (typeof(first) === "number") {
+            if (typeof (first) === "number") {
                 return first - second
             }
             return first.localeCompare(second)
         }
         else {
-            if (typeof(first) === "number") {
+            if (typeof (first) === "number") {
                 return second - first
             }
             return second.localeCompare(first)
         }
     }
 
-    const filterGames = g => {        
+    const filterGames = g => {
         if (filter.name.text.length > 0) {
             const compareText = (a, b) => {
                 const filterWords = a.toUpperCase().split(' ')
@@ -277,7 +277,7 @@ function FileDisplay() {
                 }
                 return true
             }
-                        
+
             if (filter.name.match === 0) {
                 if (!compareText(filter.name.text, g.white_name) && !compareText(filter.name.text, g.black_name)) {
                     return false
@@ -291,7 +291,7 @@ function FileDisplay() {
             }
         }
 
-        if (filter.startDate && filter.startDate > new Date(g.date)) return false 
+        if (filter.startDate && filter.startDate > new Date(g.date)) return false
         if (filter.endDate && filter.endDate < new Date(g.date)) return false
 
         if (filter.event !== 'Any' && filter.event !== g.event) return false
@@ -300,50 +300,95 @@ function FileDisplay() {
         return true
     }
 
+    const getHeaders = type => {
+        if (type === 1) {
+            return (
+                <>
+                    <th>White Name {getSortButtons(0)}</th>
+                    <th>ELO {getSortButtons(1)}</th>
+                    <th>Black Name {getSortButtons(2)}</th>
+                    <th>ELO {getSortButtons(3)}</th>
+                    <th>Date {getSortButtons(4)}</th>
+                    <th style={{ maxWidth: '10%' }}>Event {getSortButtons(5)}</th>
+                    <th>Round {getSortButtons(6)}</th>
+                    <th>Result {getSortButtons(7)}</th>
+                </>
+            );
+        }
+        else if (type === 2) {
+            return (
+                <>
+                    <th>Description</th>
+                    <th>Side</th>
+                </>
+            )
+        }
+        else if (type === 3) {
+            return <th>Description</th>
+        }
+    }
+
+    const getValues = (type, g, goTo) => {
+        if (type === 1) {
+            return (
+                <>
+                    <td onClick={goTo}>{g.white_name}</td>
+                    <td onClick={goTo}>{g.white_rating}</td>
+                    <td onClick={goTo}>{g.black_name}</td>
+                    <td onClick={goTo}>{g.black_rating}</td>
+                    <td onClick={goTo}>{g.date}</td>
+                    <td onClick={goTo}>{g.event}</td>
+                    <td onClick={goTo}>{g.round}</td>
+                    <td onClick={goTo}>{g.result}</td>
+                </>
+            )
+        }
+        else if (type === 2) {
+            return (
+                <>
+                    <td onClick={goTo}>{g.description}</td>
+                    <td onClick={goTo}>{g.side ? 'Black' : 'White'}</td>
+                </>
+            )
+        
+        }
+        else if (type === 3) {
+            return (
+                <td onClick={goTo}>{g.description}</td>
+            )
+        }
+    }
+
     const getGames = () => {
-        console.log(filter)
-        const enabled = selectedTab === 1 || files.filter(f => f.type !== 1).length < 1
-        if (!enabled) return null;
+        const type = selectedTab;           
         const games = files
-            .filter(f => f.type === 1)
+            .filter(f => f.type != 0)
+            .filter(f => f.type == type)
             .filter(filterGames)
             .sort(compareGames)
-        
+
+
         if (games.length < 1) return null;
         return (
-            <Table bordered hover size="sm" style={{fontSize: '14px'}}>
+            <Table bordered hover size="sm" style={{ fontSize: '14px' }}>
                 <thead>
                     <tr>
                         <th>#</th>
-                        <th>White Name {getSortButtons(0)}</th>
-                        <th>ELO {getSortButtons(1)}</th>
-                        <th>Black Name {getSortButtons(2)}</th>
-                        <th>ELO {getSortButtons(3)}</th>
-                        <th>Date {getSortButtons(4)}</th>
-                        <th style={{maxWidth: '10%'}}>Event {getSortButtons(5)}</th>
-                        <th>Round {getSortButtons(6)}</th>
-                        <th>Result {getSortButtons(7)}</th>
+                        {getHeaders(type)}
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {games.map((g, i) => {                        
-                        const goTo = () => { console.log(g.id); dispatch(go({location: EDITOR, params: {id: g.id }}))}
+                    {games.map((g, i) => {
+                        const goTo = () => { console.log(g.id); dispatch(go({ location: EDITOR, params: { id: g.id } })) }
                         const selected = selection.filter(i => i.key == g.key).length > 0;
                         const selectHandler = selected ?
                             () => dispatch(unselectEntry(g)) :
                             () => dispatch(selectEntry(g));
                         return (
-                            <tr>
+                            <tr key={g.key}>
                                 <td>{i + 1}</td>
-                                <td onClick={goTo}>{g.white_name}</td>
-                                <td onClick={goTo}>{g.white_rating}</td>
-                                <td onClick={goTo}>{g.black_name}</td>
-                                <td onClick={goTo}>{g.black_rating}</td>
-                                <td onClick={goTo}>{g.date}</td>
-                                <td onClick={goTo}>{g.event}</td>
-                                <td onClick={goTo}>{g.round}</td>
-                                <td onClick={goTo}>{g.result}</td>
+                                {getValues(type, g, goTo)}
                                 <td style={{ textAlign: 'center' }}>
                                     <IconButton onClick={selectHandler} color="#547b91" hoverColor="blue" disabled={false} style={{ marginRight: '10px' }}>
                                         {selected ? <ImCheckboxChecked /> : <ImCheckboxUnchecked />}
@@ -358,7 +403,7 @@ function FileDisplay() {
             </Table>
         );
     }
-    
+
     if (!files || files.length < 1) {
         return <h4>This directory is empty</h4>
     }

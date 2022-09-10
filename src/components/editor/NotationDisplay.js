@@ -1,6 +1,3 @@
-import { useDispatch, useSelector } from 'react-redux';
-
-import { goToMove } from '../../state/editorSlice';
 import { getSymbol } from '../../chess/nag';
 
 const MOVE = 0;
@@ -11,9 +8,8 @@ const MAINLINE = 4;
 const COMMENTARY = 5;
 const NAG = 6;
 
-function NotationDisplay() {
-    const dispatch = useDispatch()
-    const game = useSelector(state => state.editor.game)
+function NotationDisplay(props) {    
+    const { game, goToMove } = props 
 
     const addMove = (node, buffer, moveNumber, useMoveNumber) => {
         buffer.push({
@@ -23,7 +19,7 @@ function NotationDisplay() {
             moveNumber,
             useMoveNumber,
             nags: node.nags,
-            goTo: () => dispatch(goToMove(node))
+            goTo: () => goToMove(node)
         });
 
         if (node.annotation.length > 0) {

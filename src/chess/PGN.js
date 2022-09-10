@@ -31,7 +31,7 @@ const TOK_TYPE_COMMENT = 10;
 class PGN {
     constructor(text=null, pos = startingPosition) {        
         if (text !== null) {             
-            const tokens = this.lexan(text);
+            const tokens = this.lexan(text);            
             if (tokens) {
                 this.error = null;
                 this.games = [new Game(parseFEN(pos))];                
@@ -65,7 +65,7 @@ class PGN {
         const stack = [];          
 
         let ptr = 0;
-        
+                
         for (let i = 0; i < tokens.length; i++) {            
             if (tokens[i].type !== TOK_TYP_OPEN_BRACKET && ptr >= this.games.length) {
                 // Not part of the tag pair section
@@ -89,6 +89,7 @@ class PGN {
             else if (tokens[i].type === TOK_TYP_SYMBOL) {                                   
                 if (['1-0', '1/2-1/2', '0-1', '*'].includes(tokens[i].value)) {
                     if (tokens[i].value != this.gameData[ptr]["Result"]) {
+                        console.log(tokens[i].value, this.gameData[ptr]["Result"])
                         this.error = 'Game termination marker must match result';
                     }
                     ptr++;                    

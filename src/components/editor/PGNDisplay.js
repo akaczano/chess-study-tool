@@ -13,7 +13,8 @@ import {
     promoteMove,
     setAnnotation,
     setPositionModal,
-    setNAGs
+    setNAGs,
+    goToMove
 } from '../../state/editorSlice';
 import { openModal } from '../../state/engineSlice';
 
@@ -90,7 +91,7 @@ function PGNDisplay(props) {
         else {
             return (
                 <div style={{ width: '100%', backgroundColor: '#f0f0f1', padding: '3px', height: '75%', overflowY: 'auto', overflowX: 'hidden' }}>
-                    <NotationDisplay />
+                    <NotationDisplay game={game} goToMove={m => dispatch(goToMove(m))}/>
                 </div>
             )
         }
@@ -122,7 +123,7 @@ function PGNDisplay(props) {
                         <Button
                             variant="secondary"
                             disabled={!game.canPromote()}
-                            onClick={() => dispatch(promoteMove)}
+                            onClick={() => dispatch(promoteMove())}
                         >
                             <FaChessBishop /><AiOutlineArrowUp />
                         </Button>

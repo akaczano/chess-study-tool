@@ -55,7 +55,7 @@ class ChessBoard extends React.Component {
         if (this.props.position.isMovePromotion(coords[0], coords[1], coords[2], coords[3])) {            
             this.setState({
                 promotionModal: this.props.position.whiteToMove ? 0 : 1,
-                onPromote: p => {
+                onPromote: p => {                                
                     this.setState({ promotionModal: -1 });
                     this.props.onMove(coords[0], coords[1], coords[2], coords[3], p);
                 }
@@ -87,8 +87,7 @@ class ChessBoard extends React.Component {
         }
     }
 
-    mouseLeave(e) {
-        console.log('mouse leave');
+    mouseLeave(e) {        
         this.setState({
             dragging: -1,
             startX: -1,
@@ -118,7 +117,7 @@ class ChessBoard extends React.Component {
                     <Modal.Body>
                         <div style={{ textAlign: 'center' }}>
                             {promotionPieces(this.state.promotionModal === 0).map(p => {
-                                const imageSrc = '/' + graphicFromPiece(p);
+                                const imageSrc = graphicFromPiece(p);
                                 return <img
                                     className="promote-button"
                                     src={imageSrc} key={"promote" + p}

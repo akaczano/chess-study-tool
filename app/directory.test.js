@@ -174,3 +174,9 @@ test('test download games', async () => {
         expect(list.filter(f => f.id === g).length).toBe(1)
     }    
 })
+
+test('test list sessions', async () => {
+    const list = await dirManager.listSessions()
+    console.log(list)
+    expect(list.length).toBe(1)    
+})

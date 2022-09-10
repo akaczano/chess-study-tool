@@ -14,6 +14,26 @@
     color: pink;
 }
 
+.study-tab {
+    float: left;
+    border: none;
+    outline: none;
+    
+    transition: 0.3s;
+    width: 20%;
+    background-color: transparent;
+    color: #6dded3;
+}
+
+.study-tab.active {
+    background-color: #181f1e;
+}
+
+.study-tab.inactive:hover {
+    cursor: pointer;
+    color: #0fa37c;
+}
+
 .dir-tab {
     float: left;
     border: none;

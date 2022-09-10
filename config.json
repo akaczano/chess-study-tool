@@ -10,5 +10,5 @@
             "quoteIdentifiers": false           
         }
     },
-    "path": "./backend/engines"
+    "path": "./engines"
 }

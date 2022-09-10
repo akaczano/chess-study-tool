@@ -56,7 +56,7 @@ function Database() {
         dispatch(loadFiles(id))
     }, [dispatch, id])
 
-    const getAlert = () => {
+    const getAlert = () => {        
         if (state.errMsg) {
             return (
                 <Alert variant="danger" onClose={() => dispatch(clearError())} dismissible>
@@ -79,11 +79,12 @@ function Database() {
             fileReader.onload = e => {
                 if (!e.target.result) return;
                 const pgn = new PGN(e.target.result);
-                if (pgn.error) {
+                if (pgn.error) {                    
                     dispatch(setError(pgn.error))
                     return
-                }
+                }                
                 else {
+                    console.log(pgn)
                     const games = [];
                     for (let i = 0; i < pgn.gameData.length; i++) {
                         const g = pgn.gameData[i];

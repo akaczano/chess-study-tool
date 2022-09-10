@@ -65,7 +65,7 @@ export const downloadGames = createAsyncThunk(
                 {name: 'Round', value: game.round},
                 {name: 'White', value: game.white_name},
                 {name: 'Black', value: game.black_name},
-                {name: 'result', value: game.result}                           
+                {name: 'Result', value: game.result}                           
             ];
             if (game.white_rating != 0) {
                 tags.push({name: 'WhiteELO', value: game.white_rating});
@@ -179,7 +179,7 @@ export const directorySlice = createSlice({
         cancelMove: (state) => {
             state.moveSource = null
         },
-        setError: (state, payload) => {
+        setError: (state, { payload }) => {
             state.errMsg = payload
         },
         clearError: (state) => {
@@ -259,8 +259,8 @@ export const directorySlice = createSlice({
             state.uploading = true            
         },
         [uploadGames.fulfilled]: (state, { payload }) => {
-            state.uploading = false
-            state.games = [...state.games, ...payload]
+            state.uploading = false            
+            state.files= [...state.files, ...payload]
         },
         [uploadGames.rejected]: (state, { payload }) => {
             state.uploading = false
